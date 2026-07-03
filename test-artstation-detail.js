@@ -1,0 +1,2 @@
+const { spawnSync } = require("node:child_process");
+console.log("This helper is intentionally simple: first run node test-artstation-proxy.js to confirm search API. If scan still shows 403, the blocked endpoint is usually https://www.artstation.com/projects/{hash}.json, not the search API. Use the fallback build server.js in this zip; it can collect from search results even when detail JSON is blocked.");

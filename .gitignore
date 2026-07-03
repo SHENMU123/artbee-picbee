@@ -1,4 +1,18 @@
 node_modules/
+
+# Local runtime data. Keep these on your own machine or server disk.
 data/*.json
 !data/.gitkeep
+
+# Local environment and secrets.
 .env
+
+# Codex / workspace internals.
+.agents/
+.codex/
+work/
+
+# Temporary archives and scratch files.
+*.zip
+*.zip.b64
+*.tmp

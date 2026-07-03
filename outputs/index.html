@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ArtBee PicBee - 场景构图采集台</title>
+    <link rel="preconnect" href="https://cdna.artstation.com" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="auth-locked">
+    <section class="login-screen" id="loginScreen" aria-label="登录">
+      <div class="login-stage">
+        <a class="login-brand" href="#" aria-label="ArtBee PicBee">
+          <span class="login-brand-mark">AP</span>
+          <strong>ARTBEE PICBEE</strong>
+        </a>
+        <div class="login-hero">
+          <div class="login-copy">
+            <span>ENVIRONMENT CONCEPT INDEX</span>
+            <h1>COLLECT <em>A FRAME</em>,<br />BUILD <em>A WORLD</em>!</h1>
+            <p>索引高赞环境概念作品，快速筛选题材、构图、气氛和画幅。</p>
+            <div class="login-hero-actions" aria-hidden="true">
+              <span>ArtStation 1000+ likes</span>
+              <span>Composition board</span>
+            </div>
+          </div>
+          <div class="login-card">
+            <div class="login-mark">AP</div>
+            <div class="login-title">
+              <span>ArtBee PicBee</span>
+              <strong>登录图库索引</strong>
+              <p>采集、筛选并整理高质量环境概念参考。</p>
+            </div>
+            <form class="login-form" id="loginForm" autocomplete="on">
+              <label class="sr-only" for="loginAccount">账号</label>
+              <div class="login-field">
+                <input id="loginAccount" name="account" type="text" placeholder="账号" autocomplete="username" required />
+              </div>
+              <label class="sr-only" for="loginPassword">密码</label>
+              <div class="login-field">
+                <input id="loginPassword" name="password" type="password" placeholder="密码" autocomplete="current-password" required />
+              </div>
+              <label class="sr-only" for="loginNickname">昵称</label>
+              <div class="login-field login-register-only" id="loginNicknameField" hidden>
+                <input id="loginNickname" name="nickname" type="text" placeholder="昵称（注册时填写）" autocomplete="nickname" />
+              </div>
+              <button class="login-submit" type="submit">
+                <span id="loginSubmitText">继续</span>
+                <i data-lucide="arrow-right"></i>
+              </button>
+              <button class="login-alt" id="authModeToggle" type="button">注册新账号</button>
+              <p class="login-error" id="loginError" role="alert"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-shell" id="appShell" hidden>
+      <aside class="rail" aria-label="主导航">
+        <a class="brand" href="#" aria-label="ArtBee PicBee">
+          <span class="brand-mark">AP</span>
+          <span class="brand-copy">
+            <strong>ArtBee PicBee</strong>
+            <small>visual index</small>
+          </span>
+        </a>
+
+        <nav class="rail-nav" aria-label="工作区">
+          <button class="nav-button active" type="button" data-view="discover" title="发现">
+            <i data-lucide="layout-grid"></i>
+            <span>发现</span>
+          </button>
+          <button class="nav-button" type="button" data-view="sources" title="来源">
+            <i data-lucide="rss"></i>
+            <span>来源</span>
+          </button>
+          <button class="nav-button" type="button" data-view="boards" title="参考板">
+            <i data-lucide="layers-3"></i>
+            <span>参考板</span>
+          </button>
+          <button class="nav-button" type="button" data-view="settings" title="设置">
+            <i data-lucide="settings"></i>
+            <span>设置</span>
+          </button>
+        </nav>
+
+        <section class="source-panel" aria-label="采集来源">
+          <div class="panel-heading">
+            <span>来源白名单</span>
+            <button class="icon-button" type="button" id="refreshSources" title="添加来源">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+          <div class="source-list" id="sourceList"></div>
+          <div class="proxy-card">
+            <label for="proxyInput">代理地址</label>
+            <div class="proxy-row">
+              <input id="proxyInput" type="text" placeholder="http://127.0.0.1:7897" spellcheck="false" />
+              <button class="icon-button" type="button" id="saveProxy" title="保存代理">
+                <i data-lucide="save"></i>
+              </button>
+            </div>
+            <small>浏览器能打开但采集失败时，填 VPN 的 HTTP 代理。</small>
+          </div>
+        </section>
+
+        <section class="queue-panel" aria-label="采集队列">
+          <div class="panel-heading">
+            <span>采集队列</span>
+            <span class="live-dot" aria-label="运行中"></span>
+          </div>
+          <div class="queue-list" id="queueList"></div>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div class="search-wrap">
+            <i data-lucide="search"></i>
+            <input id="searchInput" type="search" placeholder="搜索场景、构图、氛围、来源" autocomplete="off" />
+          </div>
+
+          <div class="topbar-actions">
+            <div class="segmented" role="group" aria-label="排序">
+              <button class="segment active" type="button" data-sort="score">精选</button>
+              <button class="segment" type="button" data-sort="recent">最新</button>
+              <button class="segment" type="button" data-sort="depth">空间感</button>
+            </div>
+            <button class="profile-entry" type="button" id="userProfileButton" title="用户主页">
+              <span class="topbar-avatar" id="topbarAvatar">AP</span>
+            </button>
+            <button class="primary-button" type="button" id="scanButton">
+              <i data-lucide="radar"></i>
+              <span>开始采集</span>
+            </button>
+            <button class="ghost-button user-button" type="button" id="logoutButton" title="退出登录">
+              <i data-lucide="log-out"></i>
+              <span>退出</span>
+            </button>
+          </div>
+        </header>
+
+        <section class="filters filter-dock collapsed" id="filterDock" aria-label="筛选">
+          <div class="filter-dock-head">
+            <div>
+              <span>筛选工作台</span>
+              <strong id="filterSummary">全部作品</strong>
+            </div>
+            <div class="filter-actions">
+              <button class="ghost-button compact-button" type="button" id="toggleFilters" aria-expanded="false">
+                <i data-lucide="sliders-horizontal"></i>
+                <span>展开筛选</span>
+              </button>
+              <button class="ghost-button compact-button" type="button" id="clearFiltersTop">
+                <i data-lucide="rotate-ccw"></i>
+                <span>重置</span>
+              </button>
+            </div>
+          </div>
+          <div class="filter-groups">
+            <div class="filter-group">
+              <span>题材</span>
+              <div class="filter-row" id="typeFilters"></div>
+            </div>
+            <div class="filter-group">
+              <span>构图</span>
+              <div class="filter-row compact" id="compositionFilters"></div>
+            </div>
+            <div class="filter-group">
+              <span>气氛</span>
+              <div class="filter-row compact" id="moodFilters"></div>
+            </div>
+            <div class="filter-group">
+              <span>画幅</span>
+              <div class="filter-row compact" id="ratioFilters"></div>
+            </div>
+            <div class="filter-group">
+              <span>热度</span>
+              <div class="filter-row compact" id="likesFilters"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="status-strip" aria-label="索引状态">
+          <article>
+            <i data-lucide="images"></i>
+            <span id="totalCount">0</span>
+            <small>候选画面</small>
+          </article>
+          <article>
+            <i data-lucide="sparkles"></i>
+            <span id="todayCount">0</span>
+            <small>今日新增</small>
+          </article>
+          <article>
+            <i data-lucide="radio-tower"></i>
+            <span id="sourceCount">0</span>
+            <small>启用来源</small>
+          </article>
+          <article>
+            <i data-lucide="bookmark"></i>
+            <span id="savedCount">0</span>
+            <small>收藏</small>
+          </article>
+        </section>
+
+        <section class="content-grid" id="contentGrid">
+          <div class="gallery-wrap">
+            <div class="section-heading">
+              <div>
+                <h1>构图发现</h1>
+                <p id="resultLabel">正在整理候选画面</p>
+              </div>
+              <button class="ghost-button compact-button" type="button" id="clearFilters">
+                <i data-lucide="x"></i>
+                <span>清空</span>
+              </button>
+            </div>
+            <div class="masonry" id="gallery"></div>
+            <div class="empty-state" id="emptyState" hidden>
+              <i data-lucide="scan-search"></i>
+              <strong>没有匹配结果</strong>
+              <span>换一个关键词或构图方式试试。</span>
+            </div>
+          </div>
+
+          <aside class="inspector" id="inspector" aria-label="构图分析">
+            <button class="icon-button close-inspector" type="button" id="closeInspector" title="关闭">
+              <i data-lucide="x"></i>
+            </button>
+            <div class="inspector-empty" id="inspectorEmpty">
+              <i data-lucide="mouse-pointer-click"></i>
+              <strong>选择一张画面</strong>
+              <span>查看主体、透视线、景深和可复用构图。</span>
+            </div>
+            <div class="inspector-content" id="inspectorContent" hidden></div>
+          </aside>
+        </section>
+      </main>
+
+      <section class="mobile-sheet" id="sourceSheet" aria-label="添加来源">
+        <form class="source-form" id="sourceForm">
+          <div class="form-title">
+            <strong>添加采集源</strong>
+            <button class="icon-button" type="button" id="closeSourceSheet" title="关闭">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <label>
+            <span>域名或 RSS</span>
+            <input name="sourceUrl" type="text" placeholder="https://example.com/rss" required />
+          </label>
+          <label>
+            <span>来源类型</span>
+            <select name="sourceType">
+              <option value="作品集">作品集</option>
+              <option value="开放图库">开放图库</option>
+              <option value="杂志/RSS">杂志/RSS</option>
+              <option value="社区">社区</option>
+            </select>
+          </label>
+          <div class="form-grid">
+            <label class="toggle-row">
+              <input type="checkbox" name="thumbOnly" checked />
+              <span>只索引缩略图</span>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" name="respectRobots" checked />
+              <span>遵守 robots.txt</span>
+            </label>
+          </div>
+          <button class="primary-button full" type="submit">
+            <i data-lucide="plus"></i>
+            <span>加入队列</span>
+          </button>
+        </form>
+      </section>
+
+      <section class="mobile-sheet profile-sheet" id="profileSheet" aria-label="用户主页">
+        <div class="source-form settings-form">
+          <div class="form-title">
+            <strong>用户主页</strong>
+            <button class="icon-button" type="button" id="closeProfileSheet" title="关闭">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <form class="profile-form" id="profileForm" autocomplete="on">
+            <div class="profile-head">
+              <span class="profile-avatar" id="profileAvatarPreview">AP</span>
+              <span>
+                <strong>个人资料</strong>
+                <small>头像、昵称和签名会显示在评论区。</small>
+              </span>
+            </div>
+            <label>
+              <span>昵称</span>
+              <input id="profileNickname" type="text" maxlength="24" placeholder="给自己起个名字" autocomplete="nickname" />
+            </label>
+            <label>
+              <span>头像 URL</span>
+              <input id="profileAvatar" type="url" placeholder="https://..." autocomplete="photo" />
+            </label>
+            <label>
+              <span>邮箱</span>
+              <input id="profileEmail" type="email" maxlength="120" placeholder="name@example.com" autocomplete="email" />
+            </label>
+            <label>
+              <span>个性签名</span>
+              <textarea id="profileBio" maxlength="160" placeholder="一句话介绍你的审美偏好"></textarea>
+            </label>
+            <button class="primary-button full" type="submit">
+              <i data-lucide="save"></i>
+              <span>保存资料</span>
+            </button>
+          </form>
+          <section class="profile-favorites">
+            <div class="profile-section-title">
+              <strong>我的收藏</strong>
+              <button class="ghost-button compact-button" type="button" id="profileFavoritesButton">
+                <i data-lucide="bookmark"></i>
+                <span>只看收藏</span>
+              </button>
+            </div>
+            <div class="profile-favorite-grid" id="profileFavoritesGrid"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="mobile-sheet settings-sheet" id="settingsSheet" aria-label="设置">
+        <div class="source-form settings-form">
+          <div class="form-title">
+            <strong>设置</strong>
+            <button class="icon-button" type="button" id="closeSettingsSheet" title="关闭">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <label class="setting-row" for="themeToggle">
+            <span>
+              <strong>深色模式</strong>
+              <small>切换为暗色 Liquid Glass 界面。</small>
+            </span>
+            <input id="themeToggle" type="checkbox" />
+          </label>
+          <div class="setting-note">
+            <span>ArtBee PicBee</span>
+            <small>设置会保存在当前浏览器。</small>
+          </div>
+        </div>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

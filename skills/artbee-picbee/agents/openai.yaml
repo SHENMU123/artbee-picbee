@@ -1,0 +1,6 @@
+interface:
+  display_name: "ArtBee PicBee"
+  short_description: "Maintain the ArtBee PicBee visual index."
+  default_prompt: "Use $artbee-picbee to debug my ArtBee PicBee collector and keep my saved library intact."
+policy:
+  allow_implicit_invocation: true
